@@ -1,13 +1,14 @@
+import ChatBotFab from "@/components/chaatbotfab";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-    Linking,
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Linking,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 type CalendarEventCellProps = {
@@ -64,6 +65,25 @@ const [selectedEvent, setSelectedEvent] = useState<EventDetail | null>(null);
         </TouchableOpacity>
       </View>
 
+      {/* Bottom Nav (main screen) */}
+      <View style={styles.navBar}>
+        <TouchableOpacity onPress={() => router.push("/today")}>
+          <Text style={styles.navItem}>Today</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => router.push("/appointments")}>
+          <Text style={[styles.navItem, styles.activeNav]}>Appointments</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => router.push("/medications")}>
+          <Text style={[styles.navItem]}>Medications</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity>
+          <Text style={styles.navItem}>Records</Text>
+        </TouchableOpacity>
+      </View>
+
       {/* Doctor Card */}
       <View style={styles.card}>
         <View style={styles.doctorIcon}>
@@ -100,13 +120,7 @@ const [selectedEvent, setSelectedEvent] = useState<EventDetail | null>(null);
       </TouchableOpacity>
 
       {/* Chatbot bubble (static for now) */}
-      <View style={styles.chatbotContainer}>
-        <View style={styles.chatbotBubble}>
-          <Text style={styles.chatbotIcon}>💬</Text>
-        </View>
-        <Text style={styles.chatbotLabel}>ChatBot</Text>
-      </View>
-
+     
       {/* Calendar Modal */}
       <Modal
         visible={showCalendar}
@@ -304,6 +318,8 @@ const [selectedEvent, setSelectedEvent] = useState<EventDetail | null>(null);
           )}
         </View>
       </Modal>
+            <ChatBotFab onPress={() => router.push("/chatbot")} />
+
     </View>
   );
 }
@@ -586,5 +602,32 @@ const styles = StyleSheet.create({
   eventCloseText: {
     color: "#FFFFFF",
     fontSize: 12,
+  },
+  
+  navBar: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: "#E5E7EB",
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+  navItem: {
+    fontSize: 14,
+    color: "#6B7280",
+  },
+  activeNav: {
+    color: "#FFFFFF",
+    backgroundColor: "#1E3A8A",
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 999,
+    overflow: "hidden",
+    fontWeight: "600",
   },
 });

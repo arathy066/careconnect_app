@@ -1,3 +1,4 @@
+import ChatBotFab from "@/components/chaatbotfab";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -313,6 +314,8 @@ export default function TodayScreen() {
           </View>
         </View>
       </Modal>
+            <ChatBotFab onPress={() => router.push("/chatbot")} />
+
     </View>
   );
 }
