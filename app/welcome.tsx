@@ -1,23 +1,36 @@
+import WelcomeImg from "@/assets/images/welcome.png";
 import { useRouter } from 'expo-router';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
+
 
 export default function WelcomeScreen() {
   const router = useRouter();
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>CareConnect</Text>
-      <Text style={styles.subtitle}>Accessible Healthcare For Everyone</Text>
+  <View style={styles.container}>
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => router.push('/login')} // navigate to login screen
-        activeOpacity={0.8}
-      >
-        <Text style={styles.buttonText}>Get Started</Text>
-      </TouchableOpacity>
-    </View>
-  );
+   
+
+    <Text style={styles.title}>CareConnect</Text>
+    <Text style={styles.subtitle}>Accessible Healthcare For Everyone</Text>
+ <Image
+      source={WelcomeImg}
+      style={{ width: 320, height: 380, marginBottom: 30 }}
+      resizeMode="contain"
+    />
+    <TouchableOpacity
+      style={styles.button}
+      onPress={() => router.push('/login')}
+      activeOpacity={0.8}
+    >
+      
+      <Text style={styles.buttonText}>Get Started</Text>
+    </TouchableOpacity>
+
+  </View>
+);
+
 }
 
 const styles = StyleSheet.create({

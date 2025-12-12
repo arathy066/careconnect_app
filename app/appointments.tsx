@@ -1,7 +1,11 @@
+import BackIcon from "@/assets/images/left-arrow.png"; // adjust path if needed
+import AddMenuModal from "@/components/add-menu-modal";
 import ChatBotFab from "@/components/chaatbotfab";
+
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import { useState } from "react";
 import {
+  Image,
   Linking,
   Modal,
   ScrollView,
@@ -27,9 +31,14 @@ type EventDetail = {
   mapsQuery: string;
 };
 
-
 // Small reusable cell for calendar events (date + black badge)
-function CalendarEventCell({ day, title, subtitle, onPress }: CalendarEventCellProps) {  return (
+function CalendarEventCell({
+  day,
+  title,
+  subtitle,
+  onPress,
+}: CalendarEventCellProps) {
+  return (
     <View style={styles.calendarCell}>
       <Text style={styles.dateText}>{day}</Text>
       <TouchableOpacity style={styles.eventBadge} onPress={onPress}>
@@ -46,7 +55,8 @@ function CalendarEventCell({ day, title, subtitle, onPress }: CalendarEventCellP
 export default function AppointmentsScreen() {
   const router = useRouter();
   const [showCalendar, setShowCalendar] = useState(false);
-const [selectedEvent, setSelectedEvent] = useState<EventDetail | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<EventDetail | null>(null);
+  const [addMenuVisible, setAddMenuVisible] = useState(false);
 
   const openMaps = (query: string) => {
     const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
@@ -60,7 +70,7 @@ const [selectedEvent, setSelectedEvent] = useState<EventDetail | null>(null);
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Appointments</Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => setAddMenuVisible(true)}>
           <Text style={styles.addText}>Add +</Text>
         </TouchableOpacity>
       </View>
@@ -79,7 +89,7 @@ const [selectedEvent, setSelectedEvent] = useState<EventDetail | null>(null);
           <Text style={[styles.navItem]}>Medications</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => router.push("/records" as any)}>
           <Text style={styles.navItem}>Records</Text>
         </TouchableOpacity>
       </View>
@@ -120,7 +130,7 @@ const [selectedEvent, setSelectedEvent] = useState<EventDetail | null>(null);
       </TouchableOpacity>
 
       {/* Chatbot bubble (static for now) */}
-     
+
       {/* Calendar Modal */}
       <Modal
         visible={showCalendar}
@@ -131,9 +141,13 @@ const [selectedEvent, setSelectedEvent] = useState<EventDetail | null>(null);
         <View style={styles.calendarOverlay}>
           <View style={styles.calendarCard}>
             {/* Top row with back arrow */}
+
             <View style={styles.calendarTopRow}>
-              <TouchableOpacity onPress={() => setShowCalendar(false)}>
-                <Text style={styles.backArrow}>←</Text>
+              <TouchableOpacity
+                onPress={() => setShowCalendar(false)}
+                style={styles.backButton}
+              >
+                <Image source={BackIcon} style={styles.backIcon} />
               </TouchableOpacity>
             </View>
 
@@ -141,9 +155,9 @@ const [selectedEvent, setSelectedEvent] = useState<EventDetail | null>(null);
             <View style={styles.calendarInner}>
               {/* Month header */}
               <View style={styles.monthHeader}>
-                <Text style={styles.monthNav}>{'<'}</Text>
+                <Text style={styles.monthNav}>{"<"}</Text>
                 <Text style={styles.monthTitle}>October</Text>
-                <Text style={styles.monthNav}>{'>'}</Text>
+                <Text style={styles.monthNav}>{">"}</Text>
               </View>
 
               {/* Days of week */}
@@ -279,12 +293,6 @@ const [selectedEvent, setSelectedEvent] = useState<EventDetail | null>(null);
           {selectedEvent && (
             <View style={styles.eventOverlay}>
               <View style={styles.eventCard}>
-                <Text style={styles.eventSmallText}>
-                  {selectedEvent.doctor} – {selectedEvent.specialty}
-                </Text>
-
-                <View style={{ height: 16 }} />
-
                 <Text style={styles.eventMainText}>
                   {selectedEvent.doctor} –
                 </Text>
@@ -318,8 +326,12 @@ const [selectedEvent, setSelectedEvent] = useState<EventDetail | null>(null);
           )}
         </View>
       </Modal>
-            <ChatBotFab onPress={() => router.push("/chatbot")} />
+      <ChatBotFab onPress={() => router.push("/chatbot")} />
 
+      <AddMenuModal
+        visible={addMenuVisible}
+        onClose={() => setAddMenuVisible(false)}
+      />
     </View>
   );
 }
@@ -339,19 +351,20 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   title: {
-    fontSize: 28,
-    fontWeight: "700",
-    color: "#111827",
+    fontSize: 36,
+    fontWeight: "600",
+    color: "#052263ff",
   },
   addText: {
     color: "#1E3A8A",
     fontWeight: "600",
+    fontSize: 20,
   },
   card: {
     backgroundColor: "#fff",
     borderRadius: 12,
-    padding: 20,
-    marginBottom: 20,
+    padding: 24,
+    marginBottom: 24,
     shadowColor: "#000",
     shadowOpacity: 0.05,
     shadowRadius: 5,
@@ -359,33 +372,40 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
+
   doctorIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 48, // increased from 40
+    height: 48,
+    borderRadius: 24,
     backgroundColor: "#E5EDFF",
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 12,
+    marginRight: 16, // more spacing from text block
   },
+
   doctorIconText: {
-    fontSize: 22,
+    fontSize: 26, // slightly bigger emoji circle
   },
-  doctorInfo: {
-    flex: 1,
-  },
+
   doctorName: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: "700",
     color: "#1E3A8A",
+    lineHeight: 26, // added for clarity
   },
+
   doctorSpecialty: {
-    fontSize: 14,
+    fontSize: 20,
     color: "#4B5563",
+    marginTop: 4, // spacing below name
+    lineHeight: 26,
   },
+
   doctorLocation: {
-    fontSize: 12,
+    fontSize: 20,
     color: "#6B7280",
+    marginTop: 2, // spacing between specialty + location
+    lineHeight: 26,
   },
   section: {
     backgroundColor: "#fff",
@@ -398,7 +418,7 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: "600",
     color: "#1E3A8A",
     marginBottom: 10,
@@ -410,13 +430,13 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   appointmentDate: {
-    fontSize: 14,
+    fontSize: 18,
     color: "#111827",
   },
   appointmentTime: {
-    fontSize: 14,
+    fontSize: 18,
     color: "#111827",
-    fontWeight: "600",
+    fontWeight: "450",
   },
   calendarButton: {
     backgroundColor: "#E5EDFF",
@@ -428,6 +448,7 @@ const styles = StyleSheet.create({
   calendarButtonText: {
     color: "#1E3A8A",
     fontWeight: "600",
+    fontSize: 18,
   },
   chatbotContainer: {
     position: "absolute",
@@ -461,21 +482,33 @@ const styles = StyleSheet.create({
   },
   calendarCard: {
     width: "90%",
-    height: "80%",
+    height: "70%",
     backgroundColor: "#FFFFFF",
     borderRadius: 8,
     paddingTop: 10,
-    paddingHorizontal: 10,
+    paddingHorizontal: 15,
   },
   calendarTopRow: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 8,
   },
-  backArrow: {
-    fontSize: 18,
-    color: "#111827",
+
+  backButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    
+    alignItems: "center",
+    justifyContent: "center",
   },
+
+  backIcon: {
+    width: 20,
+    height: 20,
+    tintColor: "#000000ff",
+  },
+
   calendarInner: {
     flex: 1,
     borderRadius: 4,
@@ -493,7 +526,7 @@ const styles = StyleSheet.create({
   monthTitle: {
     color: "#FFFFFF",
     fontWeight: "600",
-    fontSize: 16,
+    fontSize: 20,
   },
   monthNav: {
     color: "#FFFFFF",
@@ -510,7 +543,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     fontSize: 10,
     fontWeight: "600",
-    color: "#6B7280",
+    color: "#000000ff",
   },
   calendarRow: {
     flexDirection: "row",
@@ -546,7 +579,7 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
   },
   eventText: {
-    fontSize: 7,
+    fontSize: 8.5,
     color: "#FFFFFF",
   },
 
@@ -603,7 +636,7 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 12,
   },
-  
+
   navBar: {
     flexDirection: "row",
     justifyContent: "space-around",
@@ -618,7 +651,7 @@ const styles = StyleSheet.create({
     right: 0,
   },
   navItem: {
-    fontSize: 14,
+    fontSize: 16,
     color: "#6B7280",
   },
   activeNav: {

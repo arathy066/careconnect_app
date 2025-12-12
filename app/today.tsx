@@ -1,6 +1,7 @@
+import AddMenuModal from "@/components/add-menu-modal";
 import ChatBotFab from "@/components/chaatbotfab";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Animated,
   FlatList,
@@ -41,6 +42,7 @@ export default function TodayScreen() {
     (typeof tasks)[number] | null
   >(null);
   const [showModal, setShowModal] = useState(false);
+  const [addMenuVisible, setAddMenuVisible] = useState(false);
   const [skippedToday, setSkippedToday] = useState(false);
   const fadeAnim = useState(new Animated.Value(1))[0];
   const [takenToday, setTakenToday] = useState(false);
@@ -95,7 +97,7 @@ export default function TodayScreen() {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Today</Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => setAddMenuVisible(true)}>
           <Text style={styles.addText}>Add +</Text>
         </TouchableOpacity>
       </View>
@@ -126,7 +128,7 @@ export default function TodayScreen() {
         contentContainerStyle={{ paddingBottom: 80 }}
       />
 
-      {/* Bottom Nav */}
+      {/* Bottom Nav (main screen) */}
       <View style={styles.navBar}>
         <TouchableOpacity onPress={() => router.push("/today")}>
           <Text style={[styles.navItem, styles.activeNav]}>Today</Text>
@@ -136,11 +138,11 @@ export default function TodayScreen() {
           <Text style={styles.navItem}>Appointments</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => router.push("/medications")}>
+        <TouchableOpacity>
           <Text style={styles.navItem}>Medications</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => router.push("/")}>
+        <TouchableOpacity onPress={() => router.push("/records" as any)}>
           <Text style={styles.navItem}>Records</Text>
         </TouchableOpacity>
       </View>
@@ -314,8 +316,12 @@ export default function TodayScreen() {
           </View>
         </View>
       </Modal>
-            <ChatBotFab onPress={() => router.push("/chatbot")} />
+      <ChatBotFab onPress={() => router.push("/chatbot")} />
 
+      <AddMenuModal
+        visible={addMenuVisible}
+        onClose={() => setAddMenuVisible(false)}
+      />
     </View>
   );
 }
@@ -335,31 +341,32 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   title: {
-    fontSize: 28,
-    fontWeight: "700",
-    color: "#111827",
+    fontSize: 36,
+    fontWeight: "600",
+    color: "#052263ff",
   },
   addText: {
     color: "#1E3A8A",
     fontWeight: "600",
+    fontSize: 20,
   },
   subtitle: {
     color: "#374151",
-    fontSize: 15,
+    fontSize: 20,
     marginBottom: 20,
   },
   card: {
     backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 15,
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 24, 
     shadowColor: "#000",
     shadowOpacity: 0.05,
     shadowRadius: 5,
     elevation: 2,
   },
   time: {
-    fontSize: 13,
+    fontSize: 18,
     color: "#1E3A8A",
     fontWeight: "600",
     marginBottom: 6,
@@ -374,12 +381,12 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     color: "#1E3A8A",
-    fontSize: 15,
+    fontSize: 18,
     fontWeight: "600",
   },
   cardSubtitle: {
     color: "#6B7280",
-    fontSize: 13,
+    fontSize: 18,
   },
   arrow: {
     fontSize: 18,
@@ -389,7 +396,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around",
     alignItems: "center",
-    backgroundColor: "#fff",
+    backgroundColor: "#FFFFFF",
     paddingVertical: 10,
     borderTopWidth: 1,
     borderTopColor: "#E5E7EB",
@@ -399,11 +406,16 @@ const styles = StyleSheet.create({
     right: 0,
   },
   navItem: {
-    fontSize: 14,
+    fontSize: 16,
     color: "#6B7280",
   },
   activeNav: {
-    color: "#1E3A8A",
+    color: "#FFFFFF",
+    backgroundColor: "#1E3A8A",
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 999,
+    overflow: "hidden",
     fontWeight: "600",
   },
 
@@ -437,6 +449,7 @@ const styles = StyleSheet.create({
   modalAdd: {
     color: "#1E3A8A",
     fontWeight: "600",
+     fontSize: 20,
   },
   modalContent: {
     flex: 1,
@@ -444,7 +457,7 @@ const styles = StyleSheet.create({
     paddingTop: 30,
   },
   modalMedTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "700",
     color: "#1E3A8A",
     marginBottom: 20,
@@ -455,11 +468,11 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   detailLabel: {
-    fontSize: 14,
+    fontSize: 18,
     color: "#4B5563",
   },
   detailValue: {
-    fontSize: 14,
+    fontSize: 18,
     color: "#111827",
     fontWeight: "500",
   },
@@ -477,6 +490,7 @@ const styles = StyleSheet.create({
   tookButtonText: {
     fontWeight: "600",
     color: "#111827",
+    fontSize: 18,
   },
   skipButton: {
     backgroundColor: "#FED7AA", // light orange
@@ -487,6 +501,7 @@ const styles = StyleSheet.create({
   skipButtonText: {
     fontWeight: "600",
     color: "#111827",
+    fontSize: 18, 
   },
   skipBanner: {
     marginTop: 40,
@@ -503,12 +518,12 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   skipBannerText: {
-    fontSize: 14,
+    fontSize: 18,
     marginRight: 8,
   },
   skipBannerIcon: {
     fontWeight: "700",
-    fontSize: 16,
+    fontSize: 18,
     color: "#F97316",
   },
   confirmOverlay: {
@@ -528,7 +543,7 @@ const styles = StyleSheet.create({
   },
 
   confirmText: {
-    fontSize: 16,
+    fontSize: 18,
     textAlign: "center",
     color: "#1A1A1A",
     marginBottom: 15,

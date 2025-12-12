@@ -2,15 +2,15 @@
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-    KeyboardAvoidingView,
-    Platform,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 const BOT_MESSAGES = [
@@ -37,7 +37,6 @@ export default function ChatBotScreen() {
   const [input, setInput] = useState("");
 
   const handleSend = () => {
-    // For now just clear the input – no real bot logic needed
     if (!input.trim()) return;
     setInput("");
   };
@@ -105,15 +104,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: "#F5F4FF", // very light indigo bar like your design
+    backgroundColor: "#F5F4FF",
   },
   headerTitle: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#124078", // dark blue
+    fontSize: 36, // ✅ TITLE
+    fontWeight: "600",
+    color: "#124078",
   },
   closeIcon: {
-    fontSize: 24,
+    fontSize: 18, // ✅ rest = 18
     color: "#111827",
   },
 
@@ -136,7 +135,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
   },
   bubbleText: {
-    fontSize: 14,
+    fontSize: 18, // ✅
     color: "#111827",
   },
   bubbleTail: {
@@ -163,12 +162,12 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontSize: 14,
+    fontSize: 18, // ✅
     color: "#111827",
     marginRight: 10,
   },
   sendIcon: {
-    fontSize: 20,
-    color: "#1E3A8A", // bright blue arrow
+    fontSize: 18, // ✅
+    color: "#1E3A8A",
   },
 });

@@ -1,15 +1,17 @@
+import AddMenuModal from "@/components/add-menu-modal";
 import ChatBotFab from "@/components/chaatbotfab";
 import CustomSwitch from "@/components/custom-switch";
 import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Animated,
+  Image,
   Modal,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 type MedStatus = "active" | "paused" | "deleted";
 type BannerState = null | "paused" | "resumed" | "deleted";
@@ -18,25 +20,50 @@ type PillDropdownProps = {
   selected: string;
   options: string[];
   onChange: (value: string) => void;
+  isOpen?: boolean;
+  onToggle?: () => void;
 };
 
 const PillDropdown: React.FC<PillDropdownProps> = ({
   selected,
   options,
   onChange,
+  isOpen = false,
+  onToggle,
 }) => {
-  const [open, setOpen] = useState(false);
+  // If no onToggle is provided, usage falls back to local state (not recommended for z-index fix)
+  // But for this fix we will assume onToggle is always provided or we add local fallback if needed.
+  // Actually, simpler to just use fully controlled for the ones we care about.
+  const [localOpen, setLocalOpen] = useState(false);
+  const open = onToggle ? isOpen : localOpen;
+
+  const handleToggle = () => {
+    if (onToggle) {
+      onToggle();
+    } else {
+      setLocalOpen(prev => !prev);
+    }
+  }
 
   const handleSelect = (value: string) => {
     onChange(value);
-    setOpen(false);
+    if (onToggle) {
+      // optionally close on select? Yes usually.
+      // We'll rely on parent to close, or just toggle again. 
+      // Better: logic should be "select value" -> parent usually closes.
+      // But here we need to close it. 
+      // If controlled, we call onToggle() because "open" is true, so toggle makes it false.
+      onToggle();
+    } else {
+      setLocalOpen(false);
+    }
   };
 
   return (
     <View style={styles.dropdownContainer}>
       <TouchableOpacity
         style={styles.dropdownPill}
-        onPress={() => setOpen((prev) => !prev)}
+        onPress={handleToggle}
         activeOpacity={0.8}
       >
         <Text style={styles.dropdownText}>{selected}</Text>
@@ -64,6 +91,14 @@ export default function MedicationsScreen() {
   const router = useRouter();
   const [showDetails, setShowDetails] = useState(false);
   const [imageModalVisible, setImageModalVisible] = useState(false);
+  const [addMenuVisible, setAddMenuVisible] = useState(false);
+
+  // Z-index management for dropdowns
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+
+  const toggleDropdown = (id: string) => {
+    setActiveDropdown(prev => prev === id ? null : id);
+  };
 
   // NEW – full-screen sub-modals
   const [showSchedule, setShowSchedule] = useState(false);
@@ -148,15 +183,16 @@ export default function MedicationsScreen() {
   const pauseButtonLabel = isDeleted
     ? "Pause Medication"
     : isPaused
-    ? "Resume Medication"
-    : "Pause Reminder";
+      ? "Resume Medication"
+      : "Pause Medication";
 
   return (
     <View style={styles.container}>
+
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Medications</Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => setAddMenuVisible(true)}>
           <Text style={styles.addText}>Add +</Text>
         </TouchableOpacity>
       </View>
@@ -192,8 +228,9 @@ export default function MedicationsScreen() {
         </View>
       </ScrollView>
 
-      {/* ChatBot bubble */}
       <ChatBotFab onPress={() => router.push("/chatbot")} />
+
+      <AddMenuModal visible={addMenuVisible} onClose={() => setAddMenuVisible(false)} />
 
       {/* Bottom Nav (main screen) */}
       <View style={styles.navBar}>
@@ -209,7 +246,7 @@ export default function MedicationsScreen() {
           <Text style={[styles.navItem, styles.activeNav]}>Medications</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => router.push("/records" as any)}>
           <Text style={styles.navItem}>Records</Text>
         </TouchableOpacity>
       </View>
@@ -238,9 +275,11 @@ export default function MedicationsScreen() {
               style={styles.imageWrapper}
               onPress={() => setImageModalVisible(true)}
             >
-              <View style={styles.imagePlaceholder}>
-                <Text style={styles.imageText}>Bottle Image</Text>
-              </View>
+              <Image
+  source={require("../assets/images/D-Forte.png")}
+  style={styles.medBottleSmall}
+  resizeMode="contain"
+/>
             </TouchableOpacity>
 
             <Text style={styles.tapHint}>(tap image to enlarge)</Text>
@@ -379,7 +418,7 @@ export default function MedicationsScreen() {
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push("/records" as any)}>
               <Text style={styles.navItem}>Records</Text>
             </TouchableOpacity>
           </View>
@@ -395,9 +434,12 @@ export default function MedicationsScreen() {
       >
         <View style={styles.imageModalOverlay}>
           <View style={styles.imageModalContent}>
-            <View style={styles.imagePlaceholderLarge}>
-              <Text style={styles.imageText}>Bottle Image</Text>
-            </View>
+            <Image
+  source={require("../assets/images/D-Forte.png")}
+  style={styles.medBottleLarge}
+  resizeMode="contain"
+/>
+
             <TouchableOpacity
               style={styles.imageModalClose}
               onPress={() => setImageModalVisible(false)}
@@ -426,7 +468,7 @@ export default function MedicationsScreen() {
           </View>
 
           <View style={styles.subCard}>
-            <View style={styles.subRow}>
+            <View style={[styles.subRow, { zIndex: activeDropdown === "intake" ? 100 : 1 }]}>
               <Text style={styles.subLabel}>Intake advice</Text>
               <PillDropdown
                 selected={intakeAdvice}
@@ -438,19 +480,23 @@ export default function MedicationsScreen() {
                   "Custom",
                 ]}
                 onChange={setIntakeAdvice}
+                isOpen={activeDropdown === "intake"}
+                onToggle={() => toggleDropdown("intake")}
               />
             </View>
 
-            <View style={styles.subRow}>
+            <View style={[styles.subRow, { zIndex: activeDropdown === "frequency" ? 100 : 1 }]}>
               <Text style={styles.subLabel}>Frequency</Text>
               <PillDropdown
                 selected={frequency}
                 options={["Daily", "Every other day", "Custom"]}
                 onChange={setFrequency}
+                isOpen={activeDropdown === "frequency"}
+                onToggle={() => toggleDropdown("frequency")}
               />
             </View>
 
-            <View style={styles.subRow}>
+            <View style={[styles.subRow, { zIndex: activeDropdown === "duration" ? 100 : 1 }]}>
               <Text style={styles.subLabel}>Duration</Text>
               <PillDropdown
                 selected={duration}
@@ -462,6 +508,8 @@ export default function MedicationsScreen() {
                   "Custom",
                 ]}
                 onChange={setDuration}
+                isOpen={activeDropdown === "duration"}
+                onToggle={() => toggleDropdown("duration")}
               />
             </View>
 
@@ -624,13 +672,14 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   title: {
-    fontSize: 28,
-    fontWeight: "700",
-    color: "#111827",
+    fontSize: 36,
+    fontWeight: "600",
+  color: "#052263ff",
   },
   addText: {
     color: "#1E3A8A",
     fontWeight: "600",
+    fontSize: 20, 
   },
   backArrow: {
     fontSize: 20,
@@ -665,13 +714,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cardTitle: {
-    fontSize: 15,
+    fontSize: 18,
     fontWeight: "600",
     color: "#1E3A8A",
     marginBottom: 4,
   },
   cardSubtitle: {
-    fontSize: 13,
+    fontSize: 18,
     color: "#6B7280",
   },
 
@@ -712,7 +761,7 @@ const styles = StyleSheet.create({
     right: 0,
   },
   navItem: {
-    fontSize: 14,
+    fontSize: 16,
     color: "#6B7280",
   },
   activeNav: {
@@ -752,25 +801,25 @@ const styles = StyleSheet.create({
   tapHint: {
     marginTop: 8,
     textAlign: "center",
-    fontSize: 12,
+    fontSize: 16,
     color: "#6B7280",
   },
   medName: {
     marginTop: 16,
     textAlign: "center",
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "700",
     color: "#1E3A8A",
   },
   lastTakenLabel: {
     marginTop: 6,
     textAlign: "center",
-    fontSize: 13,
+    fontSize: 16,
     color: "#6B7280",
   },
   lastTakenValue: {
     textAlign: "center",
-    fontSize: 14,
+    fontSize: 16,
     color: "#111827",
     fontWeight: "500",
   },
@@ -800,7 +849,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   actionText: {
-    fontSize: 14,
+    fontSize: 18,
     color: "#1E3A8A",
     fontWeight: "600",
   },
@@ -821,12 +870,14 @@ const styles = StyleSheet.create({
   pauseButtonText: {
     color: "#1E3A8A",
     fontWeight: "600",
+    fontSize: 18,
   },
   resumeButton: {
     backgroundColor: "#DCFCE7",
   },
   resumeButtonText: {
     color: "#15803D",
+    fontSize: 18, 
   },
   deleteButton: {
     backgroundColor: "#FEE2E2",
@@ -839,6 +890,7 @@ const styles = StyleSheet.create({
   deleteButtonText: {
     color: "#B91C1C",
     fontWeight: "600",
+    fontSize: 18, 
   },
 
   disabledButton: {
@@ -846,6 +898,7 @@ const styles = StyleSheet.create({
   },
   disabledButtonText: {
     color: "#9CA3AF",
+    fontSize: 18, 
   },
   disabledDeleteButton: {
     backgroundColor: "#F3F4F6",
@@ -914,19 +967,45 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   subLabel: {
-    fontSize: 14,
+    fontSize: 18,
     color: "#4B5563",
   },
   subValue: {
-    fontSize: 14,
+    fontSize: 18,
     color: "#111827",
     fontWeight: "600",
   },
   subLink: {
-    fontSize: 14,
+    fontSize: 18,
     color: "#1E3A8A",
     fontWeight: "700",
   },
+
+
+modalHeaderTitle: {
+  fontSize: 18,
+  fontWeight: "700",
+  color: "#111827",
+},
+
+subScreenTitle: {
+  fontSize: 22,          // "little more bigger" than 18
+  fontWeight: "700",
+  color: "#111827",
+},
+
+medBottleSmall: {
+  width: 120,
+  height: 140,
+},
+
+medBottleLarge: {
+  width: 260,
+  height: 300,
+  marginBottom: 12,
+},
+
+
 
   // status banner
   statusBanner: {
@@ -940,7 +1019,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   statusBannerText: {
-    fontSize: 13,
+    fontSize: 18,
     fontWeight: "500",
   },
   pausedBanner: {
@@ -969,7 +1048,7 @@ const styles = StyleSheet.create({
   },
   confirmText: {
     textAlign: "center",
-    fontSize: 14,
+    fontSize: 18,
     color: "#111827",
     marginBottom: 16,
   },
@@ -986,10 +1065,12 @@ const styles = StyleSheet.create({
   confirmNoText: {
     color: "#DC2626",
     fontWeight: "600",
+    fontSize: 18,
   },
   confirmYesText: {
     color: "#16A34A",
     fontWeight: "600",
+    fontSize: 18,
   },
   // pill dropdown
   dropdownContainer: {
@@ -1010,7 +1091,7 @@ const styles = StyleSheet.create({
     elevation: 2, // <-- Android
   },
   dropdownText: {
-    fontSize: 13,
+    fontSize: 18,
     color: "#1E3A8A",
     fontWeight: "600",
   },
@@ -1041,7 +1122,7 @@ const styles = StyleSheet.create({
     borderBottomColor: "#E5E7EB",
   },
   dropdownItemText: {
-    fontSize: 13,
+    fontSize: 18,
     color: "#1E3A8A",
   },
 });
